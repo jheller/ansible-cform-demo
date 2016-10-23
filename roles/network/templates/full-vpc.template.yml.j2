@@ -30,14 +30,14 @@ Resources:
     Properties:
       Tags:
       - Key: Name
-        Value: !Join [ '', [ !Ref 'AWS::StackName', '-IGW' ] ]
+        Value: !Sub ${AWS::StackName}-IGW
 
   AppRouteTable:
     Type: "AWS::EC2::RouteTable"
     Properties:
       Tags:
       - Key: Name
-        Value: !Join [ '', [ !Ref 'AWS::StackName', '-AppRouteTable' ] ]
+        Value: !Sub ${AWS::StackName}-AppRouteTable
       VpcId: !Ref vpc
 
   DbRouteTable:
@@ -45,7 +45,7 @@ Resources:
     Properties:
       Tags:
       - Key: Name
-        Value: !Join [ '', [ !Ref 'AWS::StackName', '-DbRouteTable' ] ]
+        Value: !Sub ${AWS::StackName}-DbRouteTable
       VpcId: !Ref vpc
 
   ElbRouteTable:
@@ -53,7 +53,7 @@ Resources:
     Properties:
       Tags:
       - Key: Name
-        Value: !Join [ '', [ !Ref 'AWS::StackName', '-ElbRouteTable' ] ]
+        Value: !Sub ${AWS::StackName}-ElbRouteTable
       VpcId: !Ref vpc
 
   PublicRoute:

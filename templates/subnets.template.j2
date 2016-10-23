@@ -9,7 +9,7 @@
       CidrBlock: {{ SubnetCIDR[sub][az] }}
       Tags:
       - Key: Name
-        Value: !Join [ '', [ !Ref 'AWS::StackName', '-Subnet{{ sub }}{{ az }}' ] ]
+        Value: !Sub ${AWS::StackName}-Subnet{{ sub }}{{ az }}
       VpcId: !Ref vpc
 {% if sub == 'App' %}
       MapPublicIpOnLaunch: true

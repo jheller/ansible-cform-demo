@@ -51,7 +51,7 @@ Resources:
       SubnetId: {{ vpc_stack.stack_outputs.SubnetAppA }}
       Tags:
         - Key: Name
-          Value: !Join [ '-', [ !Ref 'AWS::StackName', 'a' ] ]
+          Value: !Sub ${AWS::StackName}-a
       UserData:
         "Fn::Base64":
           !Sub |
@@ -83,7 +83,7 @@ Resources:
       SubnetId: {{ vpc_stack.stack_outputs.SubnetAppB }}
       Tags:
         - Key: Name
-          Value: !Join [ '-', [ !Ref 'AWS::StackName', 'b' ] ]
+          Value: !Sub ${AWS::StackName}-b
       UserData:
         "Fn::Base64":
           !Sub |
@@ -132,7 +132,7 @@ Resources:
         - {{ vpc_stack.stack_outputs.SubnetElbB }}
       Tags:
         - Key: Name
-          Value: !Join [ '-', [ !Ref 'AWS::StackName', 'elb' ] ]
+          Value: !Sub ${AWS::StackName}-elb
 
   PubElbCNAME:
     Type: AWS::Route53::RecordSet

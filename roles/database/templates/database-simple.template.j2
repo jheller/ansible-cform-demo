@@ -58,7 +58,7 @@ Resources:
       StorageType: gp2
       Tags:
       - Key: Name
-        Value: !Join [ '-', [ !Ref "AWS::StackName", {{ dbase }} ] ]
+        Value: !Sub ${AWS::StackName}-{{ dbase }}
       VPCSecurityGroups:
       - !Ref DbSg
 {% endfor %}

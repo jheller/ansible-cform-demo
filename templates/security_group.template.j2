@@ -7,7 +7,7 @@
       VpcId: !Ref VpcId
       Tags:
         - Key: Name
-          Value: !Join [ '-', [ !Ref "AWS::StackName", {{ sg }} ] ]
+          Value: !Sub ${AWS::StackName}-{{ sg }}
 
 {% endif %}
 {% endfor %}

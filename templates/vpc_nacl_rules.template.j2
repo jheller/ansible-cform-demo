@@ -6,7 +6,7 @@
       VpcId: !Ref vpc
       Tags:
         - Key: Name
-          Value: !Join [ '-', [ !Ref "AWS::StackName", {{ acl }} ] ]
+          Value: !Sub ${AWS::StackName}-{{ acl }}
 
 {% endif %}
 {% if aws_nacl_rules[acl].ingress is defined %}

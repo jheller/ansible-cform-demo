@@ -2,7 +2,6 @@
     DB{{ dbase }}:
       Type: "AWS::RDS::DBInstance"
       Properties:
-        DBInstanceIdentifier: !Join [ -', [ !Ref "AWS::StackName", {{ dbase }}, {{ vpc_number }} ] ]
         Engine: "{{ DbEngine }}"
         EngineVersion: "{{ db_dict[dbase].DbVersion }}"
         LicenseModel: "{{ DbLicenseModel }}"
@@ -28,5 +27,5 @@
         PreferredMaintenanceWindow: "{{ DbMaintenanceWindow }}"
         Tags:
           - Key: Name
-            Value: !Join: [ '-', [ !Ref "AWS::StackName", {{ dbase }}, {{ vpc_number }} ]
+            Value: !Sub ${AWS::StackName}-{{ dbase }}
 {% endfor %}
