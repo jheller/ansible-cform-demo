@@ -5,16 +5,8 @@
 
 - name: Set DB stack name
   set_fact:
-    db_stack_name: "{{ acct_name }}-{{ vpc }}-{{ db_env }}-db"
-
-- name: Set ELB stack name
-  set_fact:
-    elb_stack_name: "{{ acct_name }}-{{ vpc }}-{{ elb_env }}-elb"
+    db_stack_name: "{{ acct_name }}-{{ vpc }}-{{ db_name }}-db"
 
 - name: Set app stack name
   set_fact:
     app_stack_name: "{{ acct_name }}-{{ vpc }}-{{ app_name }}"
-
-- name: Set sg stack name
-  set_fact:
-    sg_stack_name: "{{ acct_name }}-{{ vpc }}-{{ sg_env }}-sg"

@@ -5,11 +5,10 @@ aws_region: "ap-southeast-2"
 stack_state: present
 
 # Default environment names
-db_env: dev
+db_env: mysql
+db_name: dev
 app_env: wordpress
 app_name: "{{ app_env }}"
-sg_env: "{{ app_env }}"
-elb_env: "{{ app_env }}"
 
 # Tagging defaults
 owner: "jheller"
