@@ -10,11 +10,3 @@ zone_id: "{{ lookup('env','AWS_R53_ZONE') }}"
 
 # AWS account ID
 account_id: "{{ lookup('env','AWS_ACCOUNT_ID') }}"
-
-# Common RDS instance parameters
-DbEngine: "mysql"
-DbLicenseModel: "general-public-license"
-DbMasterUsername: "rootmaster"
-DbMasterPassword: "dbrootpass"
-DbBackupWindow: "12:37-13:07"
-DbMaintenanceWindow: "thu:03:00-thu:03:45"
