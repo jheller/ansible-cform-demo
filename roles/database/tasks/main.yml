@@ -1,0 +1,50 @@
+---
+
+- name: Get VPC stack outputs
+  describe_stack:
+    region: "{{ aws_region }}"
+    stack_name: "{{ vpc_stack_name }}"
+  register: vpc_stack
+
+- name: Create the parametised database CF stack template
+  template:
+    src: "database-simple.template.j2"
+    dest: "{{ temp_dir }}/database.template.yml"
+
+- name: Get db stack stack_outputs (if stack exists)
+  describe_stack:
+    region: "{{ aws_region }}"
+    stack_name: "{{ db_stack_name }}"
+    fail_mode: false
+  register: describe_db_stack
+
+- name: Create RDS instances
+  cloudformation:
+    stack_name: "{{ db_stack_name }}"
+    region: "{{ aws_region }}"
+    state: "present"
+    validate_certs: no
+    disable_rollback: true  # allows for debugging of the stack
+    template: "{{ temp_dir }}/database.template.yml"
+    template_parameters:
+      VpcId: "{{ vpc_stack.stack_outputs.VpcId }}"
+      DbGroupSubnetA: "{{ vpc_stack.stack_outputs.SubnetDbA }}"
+      DbGroupSubnetB: "{{ vpc_stack.stack_outputs.SubnetDbB }}"
+      RDSMultiAZ:     "{{ RDSMultiAZ }}"
+    tags:
+      Owner: "{{ owner }}"
+      CostCentre: "{{ cost_centre }}"
+      ApplicationID: "{{ application_id }}"
+  register: create_db_stack
+  when: describe_db_stack.no_stack
+
+# Now set batch_stack from either the describe or create operation
+- name: Set db_stack to describe outputs
+  set_fact:
+    db_stack: "{{ describe_db_stack }}"
+  when: not describe_db_stack.no_stack
+
+- name: Set db_stack to create outputs
+  set_fact:
+    db_stack: "{{ create_db_stack }}"
+  when: describe_db_stack.no_stack

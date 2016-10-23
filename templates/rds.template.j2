@@ -1,0 +1,32 @@
+{% for dbase in db_dict %}
+    DB{{ dbase }}:
+      Type: "AWS::RDS::DBInstance"
+      Properties:
+        DBInstanceIdentifier: !Join [ -', [ !Ref "AWS::StackName", {{ dbase }}, {{ vpc_number }} ] ]
+        Engine: "{{ DbEngine }}"
+        EngineVersion: "{{ db_dict[dbase].DbVersion }}"
+        LicenseModel: "{{ DbLicenseModel }}"
+        DBName: "{{ dbase }}"
+        DBParameterGroupName: "{{ db_dict[dbase].DbParamGroupName }}"
+        OptionGroupName: "{{ db_dict[dbase].DbOptionSet }}"
+{% if db_dict[dbase].DbSnapshot is defined %}
+        DBSnapshotIdentifier: "{{ db_dict[dbase].DbSnapshot }}"
+{% endif %}
+        Port: "{{ db_dict[dbase].DbPort }}"
+        AutoMinorVersionUpgrade: true
+        AllocatedStorage: "{{ db_dict[dbase].DbVolSize }}"
+        StorageType: "gp2"
+        DBInstanceClass: "{{ db_dict[dbase].DbType }}"
+        MasterUsername: "{{ DbMasterUsername }}"
+        MasterUserPassword: "{{ DbMasterPassword }}"
+        DBSubnetGroupName: !Ref DbSubnetGroup
+        VPCSecurityGroups:
+          - !Ref DbSg
+        BackupRetentionPeriod: "{{ db_dict[dbase].DbSnapshotRetention }}"
+        MultiAZ: !If [ RDSMultiAZ, true, false ]
+        PreferredBackupWindow: "{{ DbBackupWindow }}"
+        PreferredMaintenanceWindow: "{{ DbMaintenanceWindow }}"
+        Tags:
+          - Key: Name
+            Value: !Join: [ '-', [ !Ref "AWS::StackName", {{ dbase }}, {{ vpc_number }} ]
+{% endfor %}

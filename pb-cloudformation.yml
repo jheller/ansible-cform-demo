@@ -1,0 +1,22 @@
+---
+### Description
+#
+# This playbook creates stacks
+#
+
+- name: Provision Stack
+  hosts: local
+  gather_facts: False
+
+  pre_tasks:
+    - include: includes/variables.yml
+
+    - include: includes/set-stack-names.yml
+
+    - name: Create a tmp directory for template stack_outputs
+      file:
+        path: "{{ temp_dir }}"
+        state: directory
+
+  roles:
+    - "{{ cf_stack }}"

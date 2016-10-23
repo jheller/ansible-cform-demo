@@ -1,0 +1,30 @@
+{% for sub in tier %}
+{% for az in ["A" ,"B"] %}
+
+  Subnet{{ sub }}{{ az }}:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone:
+        !FindInMap [ SubnetConfig, AvailabilityZone{{ az }}, AZ ]
+      CidrBlock: {{ SubnetCIDR[sub][az] }}
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !Ref 'AWS::StackName', '-Subnet{{ sub }}{{ az }}' ] ]
+      VpcId: !Ref vpc
+{% if sub == 'App' %}
+      MapPublicIpOnLaunch: true
+{% endif %}
+
+  Subnet{{ sub }}{{ az }}NetworkAclAssociation:
+    Type: "AWS::EC2::SubnetNetworkAclAssociation"
+    Properties:
+      NetworkAclId: !Ref {{ sub }}Acl
+      SubnetId: !Ref Subnet{{ sub }}{{ az }}
+
+  Subnet{{ sub }}{{ az }}RouteTableAssociation:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref {{ sub }}RouteTable
+      SubnetId: !Ref Subnet{{ sub }}{{ az }}
+{% endfor %}
+{% endfor %}

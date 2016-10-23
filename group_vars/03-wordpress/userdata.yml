@@ -1,0 +1,12 @@
+---
+userdata:
+  - "sed -i -e 's/database_name_here/{{ app_name }}/g' /etc/wordpress/wp-config.php"
+  - "sed -i -e 's/username_here/{{ wordpress_user }}/g' /etc/wordpress/wp-config.php"
+  - "sed -i -e 's/password_here/{{ wordpress_pwd }}/g' /etc/wordpress/wp-config.php"
+  - "sed -i -e 's/localhost/{{ db_stack.stack_outputs.RdsDbHostdbdev }}/g' /etc/wordpress/wp-config.php"
+  - "sed -i -e 's/localhost/{{ db_stack.stack_outputs.RdsDbHostdbdev }}/g' /etc/phpMyAdmin/config.inc.php"
+  - "sed -i -e 's/wordpressdbname/{{ app_name }}/g' /tmp/create_wordpress_db.sql"
+  - "sed -i -e 's/wordpressusername/{{ wordpress_user }}/g' /tmp/create_wordpress_db.sql"
+  - "sed -i -e 's/hostname/%/g' /tmp/create_wordpress_db.sql"
+  - "sed -i -e 's/password/{{ wordpress_pwd }}/g' /tmp/create_wordpress_db.sql"
+  - "mysql -h {{ db_stack.stack_outputs.RdsDbHostdbdev }} --user={{ DbMasterUsername }} --password={{ DbMasterPassword}} < /tmp/create_wordpress_db.sql"

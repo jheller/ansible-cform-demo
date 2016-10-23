@@ -1,0 +1,7 @@
+{% for az in ["A" ,"B"] %}
+{% for sub in tier %}
+  Subnet{{ sub }}{{ az }}:
+    Description: Subnet ID for Subnet{{ sub }}{{ az }}
+    Value: !Ref Subnet{{ sub }}{{ az }}
+{% endfor %}
+{% endfor %}

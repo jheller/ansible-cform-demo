@@ -1,0 +1,13 @@
+---
+# App instance parameters
+AppInstAMI: "ami-29132e4a"
+AppInstAMIRootDev: /dev/sda1  # RHEL
+AppInstVolRootSize: 20
+AppInstKeyName: "{{ KeyName }}"
+AppInstType: t2.small
+AppInstIamRoleInstanceProfile: "TestEC2Role"
+
+wordpress_user: wordpress
+wordpress_pwd: wppasswd
+
+certificateId: 5a4d65cf-0b79-48a1-aaa2-cc249e2b3270

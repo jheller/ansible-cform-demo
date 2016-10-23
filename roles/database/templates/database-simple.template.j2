@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create {{ db_env }} DB environment. MultiAZ={{ RDSMultiAZ }}
+Parameters:
+  DbGroupSubnetA:
+    Description: Subnet for app tier Public in AZ A
+    Type: 'AWS::EC2::Subnet::Id'
+
+  DbGroupSubnetB:
+    Description: Subnet for app tier Public in AZ B
+    Type: 'AWS::EC2::Subnet::Id'
+
+  RDSMultiAZ:
+    Description: Whether to create second AZ of resources
+    Type: String
+    AllowedValues: [ 'yes', 'no' ]
+
+  VpcId:
+    Description: 'ID of the VPC to create environment in'
+    Type: 'AWS::EC2::VPC::Id'
+
+Conditions:
+  RDSMultiAZ: !Equals [ !Ref RDSMultiAZ, 'yes' ]
+
+Resources:
+{% include 'templates/security_group.template.j2' %}
+  DbSubnetGroup:
+    Type: 'AWS::RDS::DBSubnetGroup'
+    Properties:
+      DBSubnetGroupDescription: Subnets available for the RDS DB Instance
+      SubnetIds:
+      - !Ref DbGroupSubnetA
+      - !Ref DbGroupSubnetB
+
+{% for dbase in db_dict %}
+  DB{{ dbase }}:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      AllocatedStorage: '{{ db_dict[dbase].DbVolSize }}'
+      AutoMinorVersionUpgrade: true
+      BackupRetentionPeriod: '{{ db_dict[dbase].DbSnapshotRetention }}'
+      DBInstanceClass: '{{ db_dict[dbase].DbType }}'
+      DBName: '{{ dbase }}'
+      DBParameterGroupName: '{{ db_dict[dbase].DbParamGroupName }}'
+{% if db_dict[dbase].DbSnapshot is defined %}
+      DBSnapshotIdentifier: '{{ db_dict[dbase].DbSnapshot }}'
+{% endif %}
+      DBSubnetGroupName: {Ref: DbSubnetGroup}
+      Engine: '{{ DbEngine }}'
+      EngineVersion: '{{ db_dict[dbase].DbVersion }}'
+      LicenseModel: '{{ DbLicenseModel }}'
+      MasterUserPassword: '{{ DbMasterPassword }}'
+      MasterUsername: '{{ DbMasterUsername }}'
+      MultiAZ: !If [ RDSMultiAZ, true, false ]
+      OptionGroupName: '{{ db_dict[dbase].DbOptionSet }}'
+      Port: '{{ db_dict[dbase].DbPort }}'
+      PreferredBackupWindow: '{{ DbBackupWindow }}'
+      PreferredMaintenanceWindow: '{{ DbMaintenanceWindow }}'
+      StorageType: gp2
+      Tags:
+      - Key: Name
+        Value: !Join [ '-', [ !Ref "AWS::StackName", {{ dbase }} ] ]
+      VPCSecurityGroups:
+      - !Ref DbSg
+{% endfor %}
+
+Outputs:
+  DbSg:
+    Description: Db security group ID
+    Value: !Ref DbSg
+
+{% for dbase in db_dict %}
+  RdsDbHost{{ dbase }}:
+    Description: Database Default AWS CNAME
+    Value: !GetAtt [ 'DB{{ dbase }}', Endpoint.Address ]
+
+  RdsDbPort{{ dbase }}:
+    Description: Database Port
+    Value: !GetAtt [ 'DB{{ dbase }}', Endpoint.Port ]
+{% endfor %}

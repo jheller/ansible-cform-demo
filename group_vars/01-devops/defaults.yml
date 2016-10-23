@@ -1,0 +1,19 @@
+---
+
+KeyName: "{{ lookup('env','AWS_KEYNAME') }}"
+base_AMI: ami-e0c19f83    # RHEL7.2
+
+# Route 53 zove details
+zone_name: heller.com.au
+zone_id: "{{ lookup('env','AWS_R53_ZONE') }}"
+
+# AWS account ID
+account_id: "{{ lookup('env','AWS_ACCOUNT_ID') }}"
+
+# Common RDS instance parameters
+DbEngine: "mysql"
+DbLicenseModel: "general-public-license"
+DbMasterUsername: "rootmaster"
+DbMasterPassword: "dbrootpass"
+DbBackupWindow: "12:37-13:07"
+DbMaintenanceWindow: "thu:03:00-thu:03:45"

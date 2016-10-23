@@ -1,0 +1,26 @@
+---
+
+sg_stack_state: "present"
+
+sg_security_groups:
+  DbSg:
+    existing: true
+    ingress:
+      Mysql:         { Proto: tcp, From: 3306,  To: 3306,  Group: AppSg }    # Allow Application Server(s) access to Database(s)
+
+  PubElbSg:
+    ingress:
+      ExternalHTTP:  { Proto: tcp, From: 80,    To: 80,    Cidr: "0.0.0.0/0" }
+      ExternalHTTPS: { Proto: tcp, From: 443,   To: 443,   Cidr: "0.0.0.0/0" }
+    egress:
+      AppSgHTTP:     { Proto: tcp, From: 80,    To: 80,    Group: AppSg }     # Access for ELB HTTP Health Checks to Web Instances
+      AppSgHTTPS:    { Proto: tcp, From: 443,   To: 443,   Group: AppSg }     # Access for ELB HTTPS Health Checks to Web Instances
+
+  # App Tier default
+  AppSg:
+    ingress:
+      AppSgSsh:      { Proto: tcp, From: 22,    To: 22,     Cidr:  "0.0.0.0/0" }
+      AppSgHTTP:     { Proto: tcp, From: 80,    To: 80,     Group: PubElbSg }
+      AppSgHTTPS:    { Proto: tcp, From: 443,   To: 443,    Group: PubElbSg }
+    egress:
+      DBMysql:       { Proto: tcp, From: 3306,  To: 3306,   Group: DbSg }

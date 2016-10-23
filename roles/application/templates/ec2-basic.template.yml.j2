@@ -1,0 +1,179 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create app environment
+Parameters:
+  AppInstAMI:
+    Description: AMI ID for the app server instances
+    Type: String
+
+  AppInstAMIRootDev:
+    Default: /dev/xvda
+    Description: 'Root device name used by the AMI Default: /dev/xvda'
+    Type: String
+
+  AppInstKeyName:
+    Description: App Instance Key Pair Name
+    Type: 'AWS::EC2::KeyPair::KeyName'
+
+  AppInstType:
+    Description: EC2 Instance type to use for app tier
+    Type: String
+
+  AppInstVolRootSize:
+    Description: Root Volume size in GB
+    Type: Number
+
+  VpcId:
+    Description: ID of the VPC to create environment in
+    Type: 'AWS::EC2::VPC::Id'
+
+  DbSg:
+    Type: String
+    Description: DB security group (created in SG stack)
+
+Conditions:
+  CreateSecondAZ: !Equals [ '{{ CreateSecondAZ }}', 'yes' ]
+
+Resources:
+{% include 'templates/security_group.template.j2' %}
+  AppInstanceA:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      BlockDeviceMappings:
+        - DeviceName: !Ref AppInstAMIRootDev
+          Ebs:
+            VolumeSize: !Ref AppInstVolRootSize
+            VolumeType: gp2
+      ImageId: !Ref AppInstAMI
+      InstanceType: !Ref AppInstType
+      KeyName: !Ref AppInstKeyName
+      SecurityGroupIds:
+        - !Ref AppSg
+      SubnetId: {{ vpc_stack.stack_outputs.SubnetAppA }}
+      Tags:
+        - Key: Name
+          Value: !Join [ '-', [ !Ref 'AWS::StackName', 'a' ] ]
+      UserData:
+        "Fn::Base64":
+          !Sub |
+            #!/bin/bash
+            AWS_STATUS=0
+            ipaddr=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+            hostname=`hostname`
+            cat <<EOF > /etc/hosts
+            127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+            $ipaddr   $hostname
+            ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+            EOF
+{% include 'app_userdata.template.j2' %}
+
+  AppInstanceB:
+    Condition: CreateSecondAZ
+    Type: AWS::EC2::Instance
+    Properties:
+      BlockDeviceMappings:
+        - DeviceName: !Ref AppInstAMIRootDev
+          Ebs:
+            VolumeSize: !Ref AppInstVolRootSize
+            VolumeType: gp2
+      ImageId: !Ref AppInstAMI
+      InstanceType: !Ref AppInstType
+      KeyName: !Ref AppInstKeyName
+      SecurityGroupIds:
+        - !Ref AppSg
+      SubnetId: {{ vpc_stack.stack_outputs.SubnetAppB }}
+      Tags:
+        - Key: Name
+          Value: !Join [ '-', [ !Ref 'AWS::StackName', 'b' ] ]
+      UserData:
+        "Fn::Base64":
+          !Sub |
+            #!/bin/bash
+            AWS_STATUS=0
+            ipaddr=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+            hostname=`hostname`
+            cat <<EOF > /etc/hosts
+            127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+            $ipaddr   $hostname
+            ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+            EOF
+{% include 'app_userdata.template.j2' %}
+
+  PubElb:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      ConnectionDrainingPolicy:
+        Enabled: 'true'
+        Timeout: '300'
+      CrossZone: 'true'
+      HealthCheck:
+        HealthyThreshold: '2'
+        Interval: '5'
+        Target: 'TCP:80'
+        Timeout: '2'
+        UnhealthyThreshold: '2'
+      Instances:
+        - !Ref AppInstanceA
+        - !If [ CreateSecondAZ, !Ref AppInstanceB, !Ref 'AWS::NoValue' ]
+      Listeners:
+        - InstancePort: '80'
+          InstanceProtocol: HTTP
+          LoadBalancerPort: '80'
+          Protocol: HTTP
+        - InstancePort: '80'
+          InstanceProtocol: HTTP
+          LoadBalancerPort: '443'
+          Protocol: HTTPS
+          SSLCertificateId: arn:aws:acm:{{ aws_region }}:{{ account_id }}:certificate/{{ certificateId }}
+      Scheme: internet-facing
+      SecurityGroups:
+        - !Ref PubElbSg
+      Subnets:
+        - {{ vpc_stack.stack_outputs.SubnetElbA }}
+        - {{ vpc_stack.stack_outputs.SubnetElbB }}
+      Tags:
+        - Key: Name
+          Value: !Join [ '-', [ !Ref 'AWS::StackName', 'elb' ] ]
+
+  PubElbCNAME:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Comment: DNS name for {{ elb_env }}.
+      HostedZoneName: '{{ zone_name }}.'
+      Name: '{{ app_name }}.{{ zone_name }}.'
+      ResourceRecords:
+        - !GetAtt [ PubElb, DNSName ]
+      TTL: '60'
+      Type: CNAME
+
+Outputs:
+  ElbDNSname:
+    Description: 'ELB '
+    Value: !GetAtt [ PubElb, DNSName ]
+
+  ElbURL:
+    Description: 'URL for {{ app_name }}'
+    Value: 'https://{{ app_name }}.{{ zone_name }}/wordpress'
+
+  AppInstanceA:
+    Description: AppServerA Instance
+    Value: !Ref AppInstanceA
+
+  AppServerAHostName:
+    Description: Private IP of the A1 (avail zone A) app server
+    Value: !GetAtt [ AppInstanceA, PrivateDnsName ]
+
+  AppServerAIP:
+    Description: Private IP of the A1 (avail zone A) app server
+    Value: !GetAtt [ AppInstanceA, PrivateIp ]
+
+  AppInstanceB:
+    Description: AppServerB Instance
+    Value: !If [ CreateSecondAZ, !Ref AppInstanceB, !Ref 'AWS::NoValue' ]
+
+  AppServerBHostName:
+    Description: Private DNS Name of the B1 (avail zone B) app server
+    Value: !If [ CreateSecondAZ, !GetAtt [ AppInstanceB, PrivateDnsName ], !Ref 'AWS::NoValue' ]
+
+  AppServerBIP:
+    Description: Private IP of the B1 (avail zone B) app server
+    Value: !If [ CreateSecondAZ, !GetAtt [ AppInstanceB, PrivateIp ], !Ref 'AWS::NoValue' ]

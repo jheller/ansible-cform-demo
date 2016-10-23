@@ -1,0 +1,50 @@
+{% for acl in aws_nacl_rules %}
+{% if aws_nacl_rules[acl].existing is not defined %}
+  {{ acl }}:
+    Type: "AWS::EC2::NetworkAcl"
+    Properties:
+      VpcId: !Ref vpc
+      Tags:
+        - Key: Name
+          Value: !Join [ '-', [ !Ref "AWS::StackName", {{ acl }} ] ]
+
+{% endif %}
+{% if aws_nacl_rules[acl].ingress is defined %}
+{% for rule in aws_nacl_rules[acl].ingress %}
+  {{ acl }}Ingress{{ rule }}:
+    Type: "AWS::EC2::NetworkAclEntry"
+    Properties:
+      NetworkAclId: !Ref {{ acl }}
+      RuleNumber: {{ aws_nacl_rules[acl].ingress[rule].Rule }}
+      Protocol: {{ aws_nacl_rules[acl].ingress[rule].Proto }}
+      RuleAction: {{ aws_nacl_rules[acl].ingress[rule].Action }}
+      Egress: false
+{% if aws_nacl_rules[acl].ingress[rule].From is defined %}
+      PortRange:
+        From: {{ aws_nacl_rules[acl].ingress[rule].From }}
+        To: {{ aws_nacl_rules[acl].ingress[rule].To }}
+{% endif %}
+      CidrBlock: {{ aws_nacl_rules[acl].ingress[rule].Cidr }}
+
+{% endfor %}
+{% endif %}
+{% if aws_nacl_rules[acl].egress is defined %}
+{% for rule in aws_nacl_rules[acl].egress %}
+  {{ acl }}Egress{{ rule }}:
+    Type: "AWS::EC2::NetworkAclEntry"
+    Properties:
+      NetworkAclId: !Ref {{ acl }}
+      RuleNumber: {{ aws_nacl_rules[acl].egress[rule].Rule }}
+      Protocol: {{ aws_nacl_rules[acl].egress[rule].Proto }}
+      RuleAction: {{ aws_nacl_rules[acl].egress[rule].Action }}
+      Egress: true
+{% if aws_nacl_rules[acl].egress[rule].From is defined %}
+      PortRange:
+        From: {{ aws_nacl_rules[acl].egress[rule].From }}
+        To: {{ aws_nacl_rules[acl].egress[rule].To }}
+{% endif %}
+      CidrBlock: {{ aws_nacl_rules[acl].egress[rule].Cidr }}
+
+{% endfor %}
+{% endif %}
+{% endfor %}

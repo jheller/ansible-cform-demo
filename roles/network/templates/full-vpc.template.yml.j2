@@ -1,0 +1,90 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: VPC, Subnets, Internet Gateway, Route tables and AWS NACLs without peering
+Mappings:
+  SubnetConfig:
+    AvailabilityZoneA:
+      AZ: ap-southeast-2a
+    AvailabilityZoneB:
+      AZ: ap-southeast-2b
+Resources:
+{% include 'templates/vpc_nacl_rules.template.j2' %}
+  vpc:
+    Type: "AWS::EC2::VPC"
+    Properties:
+      CidrBlock: {{ vpc_cidr }}
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+      - Key: Name
+        Value: !Ref 'AWS::StackName'
+
+  GatewayToInternet:
+    Type: "AWS::EC2::VPCGatewayAttachment"
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref vpc
+
+  InternetGateway:
+    Type: "AWS::EC2::InternetGateway"
+    Properties:
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !Ref 'AWS::StackName', '-IGW' ] ]
+
+  AppRouteTable:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !Ref 'AWS::StackName', '-AppRouteTable' ] ]
+      VpcId: !Ref vpc
+
+  DbRouteTable:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !Ref 'AWS::StackName', '-DbRouteTable' ] ]
+      VpcId: !Ref vpc
+
+  ElbRouteTable:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !Ref 'AWS::StackName', '-ElbRouteTable' ] ]
+      VpcId: !Ref vpc
+
+  PublicRoute:
+    DependsOn: GatewayToInternet
+    Type: "AWS::EC2::Route"
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+      RouteTableId: !Ref ElbRouteTable
+
+  PublicAppRoute:
+    DependsOn: GatewayToInternet
+    Type: "AWS::EC2::Route"
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+      RouteTableId: !Ref AppRouteTable
+
+  S3EndPoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      RouteTableIds:
+        - !Ref AppRouteTable
+        - !Ref DbRouteTable
+      ServiceName: com.amazonaws.{{ aws_region }}.s3
+      VpcId: !Ref vpc
+
+{% include 'templates/subnets.template.j2' %}
+
+Outputs:
+{% include 'templates/subnet_outputs.template.j2' %}
+  VpcId:
+    Description: VPC Id
+    Value: !Ref vpc

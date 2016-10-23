@@ -1,0 +1,28 @@
+---
+- name: Create the parametised EC2 Basic CF stack template
+  template:
+    src: "ec2-basic.template.yml.j2"
+    dest: "{{ temp_dir }}/ec2_stack.template.yml"
+
+- name: Run the application CF stack
+  cloudformation:
+    stack_name: "{{ app_stack_name }}"
+    region: "{{ aws_region }}"
+    state: "present"
+    validate_certs: no
+    disable_rollback: true  # allows for debugging of the stack
+    template: "{{ temp_dir }}/ec2_stack.template.yml"
+    template_parameters:
+      VpcId:       "{{ vpc_stack.stack_outputs.VpcId }}"
+      AppInstAMI: "{{ AppInstAMI }}"
+      AppInstKeyName: "{{ AppInstKeyName }}"
+      AppInstAMIRootDev: "{{ AppInstAMIRootDev }}"
+      AppInstVolRootSize: "{{ AppInstVolRootSize }}"
+      AppInstType: "{{ AppInstType }}"
+      DbSg:   "{{ db_stack.stack_outputs.DbSg }}"
+    tags:
+      Owner: "{{ owner }}"
+      CostCentre: "{{ cost_centre }}"
+      ApplicationID: "{{ application_id }}"
+  register: create_app_stack
+  ignore_errors: no

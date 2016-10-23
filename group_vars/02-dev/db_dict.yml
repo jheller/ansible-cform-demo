@@ -1,0 +1,11 @@
+---
+# a dict of RDS instances to create
+db_dict:
+  dbdev:
+    DbVersion: "5.5.46"
+    DbVolSize: 5
+    DbType: "db.t2.medium"
+    DbPort: "3306"
+    DbOptionSet: "default:mysql-5-5"
+    DbSnapshotRetention: "3"
+    DbParamGroupName: "default.mysql5.5"

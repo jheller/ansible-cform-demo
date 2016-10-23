@@ -1,0 +1,25 @@
+---
+
+aws_nacl_rules:
+  ElbAcl:
+    ingress:
+      HTTP:         { Rule: 1450,  Action: allow,  Proto: 6,  Cidr: "0.0.0.0/0",      From: 80,    To: 80 }     ### Allow inbound HTTP traffic from Internet
+      HTTPS:        { Rule: 1451,  Action: allow,  Proto: 6,  Cidr: "0.0.0.0/0",      From: 443,   To: 443 }    ### Allow inbound HTTPS traffic from Internet
+      AppEphemeral: { Rule: 1452,  Action: allow,  Proto: 6,  Cidr: "{{ tier.App }}", From: 1,     To: 65535 }  ### Allow inbound SSH traffic from Internet
+    egress:
+      AppTier:      { Rule: 1452,  Action: allow,  Proto: -1, Cidr: "{{ tier.App }}",  From: 1,     To: 65535 }  ### Allow outbound SSH traffic to App subnets
+      ExternalEph:  { Rule: 1454,  Action: allow,  Proto: 6,  Cidr: "0.0.0.0/0",       From: 1024,  To: 65535 }  ### Allow internal ephemeral traffic back in
+
+  AppAcl:
+    ingress:
+      ElbTier:      { Rule: 1352,  Action: allow,  Proto: -1, Cidr: "0.0.0.0/0",       From: 1,     To: 65535 }
+      DbEphemeral:  { Rule: 1750,  Action: allow,  Proto: 6,  Cidr: "{{ tier.Db }}",   From: 1024,  To: 65535 }  ### Allow Ephemeral traffic from internal networks
+    egress:
+      DbTier:       { Rule: 1350,  Action: allow,  Proto: -1, Cidr: "{{ tier.Db }}",   From: 1,     To: 65535 }
+      PubEphemeral: { Rule: 1750,  Action: allow,  Proto: 6,  Cidr: "0.0.0.0/0",       From: 1024,  To: 65535 }  ### Allow Ephemeral traffic from internal networks
+
+  DbAcl:
+    ingress:
+      AppTier:      { Rule: 1350,  Action: allow,  Proto: -1, Cidr: "{{ tier.App }}",  From: 1,     To: 65535 }
+    egress:
+      AppTier:      { Rule: 1350,  Action: allow,  Proto: 6,  Cidr: "{{ tier.App }}",  From: 1024,  To: 65535 }

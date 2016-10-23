@@ -1,0 +1,30 @@
+---
+
+env: devops
+aws_region: "ap-southeast-2"
+stack_state: present
+
+# Default environment names
+db_env: dev
+app_env: wordpress
+app_name: "{{ app_env }}"
+sg_env: "{{ app_env }}"
+elb_env: "{{ app_env }}"
+
+# Tagging defaults
+owner: "jheller"
+cost_centre: "devops"
+application_id: "labs"
+acct_name: "jh"
+
+# Create instances two Availability Zones
+CreateSecondAZ: "yes"
+RDSMultiAZ: "no"
+
+# Location for temporary files - should not be in Git workarea
+temp_dir: "/tmp/{{ env }}-{{ app_name }}-{{ vpc }}"
+
+# ------------------------------------------------------
+# ansible defaults
+# ------------------------------------------------------
+ansible_user: ec2-user

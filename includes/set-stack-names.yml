@@ -1,0 +1,20 @@
+---
+- name: Set VPC stack name
+  set_fact:
+    vpc_stack_name: "{{ acct_name }}-{{ vpc }}-vpc"
+
+- name: Set DB stack name
+  set_fact:
+    db_stack_name: "{{ acct_name }}-{{ vpc }}-{{ db_env }}-db"
+
+- name: Set ELB stack name
+  set_fact:
+    elb_stack_name: "{{ acct_name }}-{{ vpc }}-{{ elb_env }}-elb"
+
+- name: Set app stack name
+  set_fact:
+    app_stack_name: "{{ acct_name }}-{{ vpc }}-{{ app_name }}"
+
+- name: Set sg stack name
+  set_fact:
+    sg_stack_name: "{{ acct_name }}-{{ vpc }}-{{ sg_env }}-sg"

@@ -1,0 +1,30 @@
+---
+
+# Address space is 10.x.0.0/16 for each account.
+base: "100"
+
+# Default vpc.
+# Up to 16 can be created in the available address space in each account
+vpc: 0
+vpc_base: "{{ vpc|int * 16 }}"
+
+# VPC CIDR range
+vpc_cidr: "10.{{ base }}.{{ vpc_base }}.0/20"
+
+# CAlculate subnet CIDR ranges
+SubnetCIDR:
+  App:
+    A: "10.{{ base }}.{{ vpc_base|int }}.0/22"
+    B: "10.{{ base }}.{{ vpc_base|int + 4 }}.0/22"
+  Elb:
+    A: "10.{{ base }}.{{ vpc_base|int + 8 }}.0/23"
+    B: "10.{{ base }}.{{ vpc_base|int + 10 }}.0/23"
+  Db:
+    A:  "10.{{ base }}.{{ vpc_base|int + 12 }}.0/23"
+    B:  "10.{{ base }}.{{ vpc_base|int + 14 }}.0/23"
+
+# Calculate CIDR blocks for each tier (two contiguous subnets)
+tier:
+  App: "10.{{ base }}.{{ vpc_base|int }}.0/21"
+  Elb: "10.{{ base }}.{{ vpc_base|int + 8 }}.0/22"
+  Db:  "10.{{ base }}.{{ vpc_base|int + 10 }}.0/22"

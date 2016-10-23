@@ -1,0 +1,6 @@
+{% for sg in security_groups %}
+  {{ sg }}:
+    Description : {{ sg }} security group ID
+    Value: !Ref {{ sg }}
+
+{% endfor %}

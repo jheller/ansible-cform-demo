@@ -1,0 +1,22 @@
+---
+# Creats the VPC stack.
+
+- name: Create the parametised VPC CF stack template
+  template:
+    src: "full-vpc.template.yml.j2"
+    dest: "{{ temp_dir }}/full-vpc.template.yml"
+  when: stack_state == "present"    # we don't do this when deleting stacks. It will fail.
+
+- name: Creates VPC Stack
+  cloudformation:
+    stack_name: "{{ vpc_stack_name }}"
+    region: "{{ aws_region }}"
+    state: "present"
+    validate_certs: no
+    disable_rollback: true  # allows for debugging of the stack
+    template: "{{ temp_dir }}/full-vpc.template.yml"
+    tags:
+      Owner: "{{ owner }}"
+      CostCentre: "{{ cost_centre }}"
+      ApplicationID: "{{ application_id }}"
+  when: stack_state == "present"

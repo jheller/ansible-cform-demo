@@ -1,0 +1,24 @@
+---
+# How variable inclusion works?
+#
+# - There are 3 levels of variables now (or 4 if you count "vars/all").
+# - Variables in the highest level override lower ones.
+# - Same level can only include one or the other (01-nonprod OR 01-prod, 02-dev OR 02-test, ...)
+# - Hashes redefined in higher levels are merged (otherwise check in ansible.cfg for: hash_behaviour=merge)
+# - include_vars below will ignore missing files or folders, so levels are optional.
+#   Make sure you have defaults defined at group_vars/all.
+#
+# Levels:
+#
+# 00 - vars/all: For immutable variables and defaults
+# 01 - Environment Class: e.g prod or nonprod
+# 02 - Database environment: e.g. dev or mydb
+# 03 - Application type: e.g wordpress
+#
+
+- include_vars: "{{ item }}"
+  with_fileglob:
+    - "../group_vars/01-{{ env }}/*.yml"
+    - "../group_vars/02-{{ db_env }}/*.yml"
+    - "../group_vars/03-{{ app_env }}/*.yml"
+  no_log: yes

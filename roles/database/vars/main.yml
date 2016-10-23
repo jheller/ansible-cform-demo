@@ -1,0 +1,3 @@
+---
+# default security group for RDS instances
+security_groups: "{{ db_security_groups }}"

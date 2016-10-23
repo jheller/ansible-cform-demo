@@ -1,0 +1,51 @@
+{% for sg in security_groups %}
+{% if security_groups[sg].existing is not defined %}
+  {{ sg }}:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: Application Server(s) Security Group
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: !Join [ '-', [ !Ref "AWS::StackName", {{ sg }} ] ]
+
+{% endif %}
+{% endfor %}
+{% for sg in security_groups %}
+{% if security_groups[sg].ingress is defined %}
+{% for rule in security_groups[sg].ingress %}
+  {{ sg }}Ingress{{ rule }}:
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Properties:
+      GroupId: !Ref {{ sg }}
+      IpProtocol: {{ security_groups[sg].ingress[rule].Proto }}
+      FromPort: {{ security_groups[sg].ingress[rule].From }}
+      ToPort: {{ security_groups[sg].ingress[rule].To }}
+{% if security_groups[sg].ingress[rule].Group is defined %}
+      SourceSecurityGroupId: !Ref {{ security_groups[sg].ingress[rule].Group }}
+{% elif security_groups[sg].ingress[rule].Cidr is defined %}
+      CidrIp: {{ security_groups[sg].ingress[rule].Cidr }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% endfor %}
+{% for sg in security_groups %}
+{% if security_groups[sg].egress is defined %}
+{% for rule in security_groups[sg].egress %}
+  {{ sg }}Egress{{ rule }}:
+    Type: "AWS::EC2::SecurityGroupEgress"
+    Properties:
+      GroupId: !Ref {{ sg }}
+      IpProtocol: {{ security_groups[sg].egress[rule].Proto }}
+      FromPort: {{ security_groups[sg].egress[rule].From }}
+      ToPort: {{ security_groups[sg].egress[rule].To }}
+{% if security_groups[sg].egress[rule].Group is defined %}
+      DestinationSecurityGroupId: !Ref {{ security_groups[sg].egress[rule].Group }}
+{% elif security_groups[sg].egress[rule].Cidr is defined %}
+      CidrIp: {{ security_groups[sg].egress[rule].Cidr }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% endfor %}

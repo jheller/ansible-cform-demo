@@ -1,0 +1,8 @@
+---
+
+db_security_groups:
+  DbSg:
+    ingress:
+      Mysql:       { Proto: tcp, From: 3306,  To: 3306,  Group: DbSg }   # Allow cross database connectivity
+    egress:
+      Mysql:       { Proto: tcp, From: 3306,  To: 3306,  Group: DbSg }   # Allow cross database connectivity
