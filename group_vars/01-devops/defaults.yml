@@ -1,4 +1,5 @@
 ---
+# Parameters specific to an account.
 
 KeyName: "{{ lookup('env','AWS_KEYNAME') }}"
 base_AMI: ami-e0c19f83    # RHEL7.2
