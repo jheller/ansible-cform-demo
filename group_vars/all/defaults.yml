@@ -8,7 +8,7 @@ stack_state: present
 db_env: mysql
 db_name: dev
 app_env: wordpress
-app_name: "{{ app_env }}"
+app_name: mysite
 
 # Tagging defaults
 owner: "jheller"

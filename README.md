@@ -33,16 +33,17 @@ Useful parameters to pass in extra-vars, and their default value if not specifie
 | env       | Choose the account to run this is | devops |
 | vpc       | VPC to use/create. IPs and subnets are automatically calculated | 0 |
 | cf_stack | the stack to run | No default. Must be passed. |
-| db_env | which database stack to create or use | dev |
+| db_env | which database stack to create or use | mysql |
+| db_name | A unique name for each databasse environment instance | dev|
 | app_env | Which application environment to create | wordpress |
-| app_name | a unique name for each application stack instance | wordpress |
+| app_name | a unique name for each application stack instance | mysite |
 
 ## Configuring an application
-Variables are loaded from sub-folders in the group_vars folder in the following order. All .yml files from  folders selected by certain variables are loaded.
+Variables are loaded from sub-folders in the group_vars folder in the following order. All \*.yml files from  folders selected by tne *env* variables are loaded.
 
 | Folder | Contents |
 |--------|----------|
 | all | Always loaded. Defaults can be defined in here |
-| 01-{{ env }} | Variable specific to the account |
+| 01-{{ env }} | Variables specific to the account |
 | 02-{{ db_env }} | Variables that define the RDS instance. |
 | 03-{{ app_env }}| Variables for the application, including EC2 parametrs and user data, and security groups. |
