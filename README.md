@@ -29,7 +29,7 @@ ansible-playbook -i hosts.ini -v pb-cloudformation.yml --extra-vars "cf_stack=ap
 Useful parameters to pass in extra-vars, and their default value if not specified.
 
 | Parameter | Notes| Default |
-|-----------|-------|
+|-----------|-------|--------|
 | env       | Choose the account to run this is | devops |
 | vpc       | VPC to use/create. IPs and subnets are automatically calculated | 0 |
 | cf_stack | the stack to run | No default. Must be passed. |
