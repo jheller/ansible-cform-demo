@@ -137,7 +137,7 @@ Resources:
   PubElbCNAME:
     Type: AWS::Route53::RecordSet
     Properties:
-      Comment: DNS name for {{ elb_env }}.
+      Comment: DNS name for {{ app_name }}.
       HostedZoneName: '{{ zone_name }}.'
       Name: '{{ app_name }}.{{ zone_name }}.'
       ResourceRecords:
