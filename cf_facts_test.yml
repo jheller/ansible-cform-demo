@@ -1,0 +1,27 @@
+- name: Provision Stack
+  hosts: local
+  gather_facts: False
+
+  pre_tasks:
+    - include: includes/variables.yml
+
+    - include: includes/set-stack-names.yml
+
+    - name: Create a tmp directory for template stack_outputs
+      file:
+        path: "{{ temp_dir }}"
+        state: directory
+
+  tasks:
+    - name: Get Cloudformation fact
+      cloudformation_facts:
+        stack_name: "{{ vpc_stack_name }}"
+        region: "{{ aws_region }}"
+        stack_resources: True
+      register: stack_facts
+
+    - set_fact:
+        defined_stack: "{% for key,value in stack_facts.ansible_facts.cloudformation.iteritems() %}{{ value }}{% endfor %}"
+
+    - debug:
+        var: defined_stack
