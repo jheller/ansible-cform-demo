@@ -32,7 +32,7 @@ Useful parameters to pass in extra-vars, and their default value if not specifie
 |-----------|-------|--------|
 | env       | Choose the account to run this is | devops |
 | vpc       | VPC to use/create. IPs and subnets are automatically calculated | 0 |
-| cf_stack | the stack to run | No default. Must be passed. |
+| cf_stack | the stack to run | No default. Value:  network, database or application |
 | db_env | which database stack to create or use | mysql |
 | db_name | A unique name for each databasse environment instance | dev|
 | app_env | Which application environment to create | wordpress |
@@ -40,6 +40,8 @@ Useful parameters to pass in extra-vars, and their default value if not specifie
 To stand up a full application, you need all of those variables. If they are not passed, then the defaults will be used.
 
 Multiple instances of network, database and application stacks can co-exist. They are cross-linked by using the names of existing lower layer stacks when creating a new one.
+
+Although this could be made to work with multiple accounts using cross-account roles, that is not implemented in this demo.
 
 ## Configuring an application
 Variables are loaded from sub-folders in the group_vars folder in the following order. All \*.yml files from  folders selected by tne *env* variables are loaded.
