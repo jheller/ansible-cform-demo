@@ -9,4 +9,4 @@
 
 - name: Set app stack name
   set_fact:
-    app_stack_name: "{{ acct_name }}-{{ vpc }}-{{ app_name }}"
+    app_stack_name: "{{ acct_name }}-{{ vpc }}-{{ db_name }}-{{ app_name }}"
